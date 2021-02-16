@@ -2,6 +2,7 @@ package domain
 
 import (
 	"database/sql"
+	errors2 "github.com/Khanabeev/banking/errors"
 	"log"
 	"time"
 
@@ -14,7 +15,14 @@ type CustomerRepositoryDB struct {
 
 func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 
-	findAllSql := `SELECT customer_id, name, city, zipcode, date_of_birth, status from customers`
+	findAllSql := `SELECT 
+					   customer_id, 
+					   name, 
+					   city, 
+					   zipcode, 
+					   date_of_birth, 
+					   status 
+					FROM customers`
 
 	rows, err := d.client.Query(findAllSql)
 
@@ -36,15 +44,21 @@ func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 	return customers, nil
 }
 
-func (d CustomerRepositoryDB) ById(id string) (*Customer, error) {
+func (d CustomerRepositoryDB) ById(id string) (*Customer, *errors2.AppError) {
 	customerSql := `SELECT customer_id, name, city, zipcode, date_of_birth, status from customers WHERE customer_id = ?`
 
 	row := d.client.QueryRow(customerSql, id)
+
 	var c Customer
 	err := row.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateOfBirth, &c.Status)
 	if err != nil {
-		log.Println("Error while scanning customer " + err.Error())
-		return nil, err
+		if err == sql.ErrNoRows {
+			return nil, errors2.NewNotFoundError("Customer not found")
+		} else {
+			log.Println("Error while scanning customer " + err.Error())
+			return nil, errors2.UnexpectedError("unexpected database error")
+		}
+
 	}
 	return &c, nil
 }
