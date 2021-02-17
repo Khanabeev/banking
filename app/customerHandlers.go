@@ -3,17 +3,10 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"github.com/Khanabeev/banking/service"
 	"github.com/gorilla/mux"
 	"net/http"
 )
-
-//type Customer struct {
-//	Name    string `json:"name" xml:"name"`
-//	City    string `json:"city" xml:"city"`
-//	Zipcode string `json:"zip_code" xml:"zip_code"`
-//}
 
 type CustomerHandlers struct {
 	service service.CustomerService
@@ -21,18 +14,16 @@ type CustomerHandlers struct {
 
 func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
 
-	customers, err := ch.service.GetAllCustomers()
+	status := r.URL.Query().Get("status")
+
+	customers, err := ch.service.GetAllCustomers(status)
 	if err != nil {
-		fmt.Fprint(w, err)
+		writeResponse(w, err.Code,err.AsMessage())
 	}
 
-	if r.Header.Get("Content-Type") == "application/xml" {
-		w.Header().Set("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customers)
-	} else {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(customers)
-	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(customers)
+
 }
 
 func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) {
