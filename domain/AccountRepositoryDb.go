@@ -31,19 +31,18 @@ func (d AccountRepositoryDb) Save(a Account) (*Account, *errors2.AppError) {
 	return &a, nil
 }
 
-func (d AccountRepositoryDb) FindBy(id string) (*Account, *errors2.AppError) {
+func (d AccountRepositoryDb) FindBy(accountId, customerId string) (*Account, *errors2.AppError) {
 
 	stmt := `SELECT account_id, customer_id, opening_date, account_type, status, amount
 				FROM accounts 
-				WHERE account_id = ?`
+				WHERE account_id = ? AND customer_id = ?`
 
-	row := d.client.QueryRow(stmt, id)
+	row := d.client.QueryRow(stmt, accountId, customerId)
 	if row.Err() != nil {
 		logger.Error("Error while getting account: " + row.Err().Error())
 		return nil, errors2.UnexpectedError("Unexpected error from database")
 	}
 	var a Account
-	row = d.client.QueryRow(stmt, id)
 
 	switch err := row.Scan(
 		&a.AccountId,
@@ -53,7 +52,7 @@ func (d AccountRepositoryDb) FindBy(id string) (*Account, *errors2.AppError) {
 		&a.Status,
 		&a.Amount); err {
 	case sql.ErrNoRows:
-		return nil, errors2.NewNotFoundError("Bank account not exist")
+		return nil, errors2.NewNotFoundError("Bank account doesn't exist")
 	case nil:
 		return &a, nil
 	default:

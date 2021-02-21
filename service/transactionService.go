@@ -23,7 +23,7 @@ func (s DefaultTransactionService) CreateNewTransaction(r dto.NewTransactionRequ
 		return nil, err
 	}
 
-	account, appError := s.accountRepo.FindBy(r.AccountId)
+	account, appError := s.accountRepo.FindBy(r.AccountId, r.CustomerId)
 	if appError != nil {
 		return nil, appError
 	}
