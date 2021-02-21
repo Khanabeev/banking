@@ -4,17 +4,15 @@ import (
 	"database/sql"
 	errors2 "github.com/Khanabeev/banking/errors"
 	"github.com/Khanabeev/banking/logger"
-	"github.com/jmoiron/sqlx"
-	"time"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
-type CustomerRepositoryDB struct {
+type CustomerRepositoryDb struct {
 	client *sqlx.DB
 }
 
-func (d CustomerRepositoryDB) FindAll(status string) ([]Customer, *errors2.AppError) {
+func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errors2.AppError) {
 	customers := make([]Customer, 0)
 	findAllSql := `SELECT 
 					   customer_id, 
@@ -38,7 +36,7 @@ func (d CustomerRepositoryDB) FindAll(status string) ([]Customer, *errors2.AppEr
 	return customers, nil
 }
 
-func (d CustomerRepositoryDB) ById(id string) (*Customer, *errors2.AppError) {
+func (d CustomerRepositoryDb) ById(id string) (*Customer, *errors2.AppError) {
 	customerSql := `SELECT customer_id, name, city, zipcode, date_of_birth, status from customers WHERE customer_id = ?`
 
 	var c Customer
@@ -55,17 +53,6 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, *errors2.AppError) {
 	return &c, nil
 }
 
-func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	client, err := sqlx.Open("mysql", "root:root@tcp(localhost:3306)/banking")
-	if err != nil {
-		panic(err)
-	}
-	// See "Important settings" section.
-	client.SetConnMaxLifetime(time.Minute * 3)
-	client.SetMaxOpenConns(10)
-	client.SetMaxIdleConns(2)
-
-	return CustomerRepositoryDB{
-		client,
-	}
+func NewCustomerRepositoryDb(dbClient *sqlx.DB) CustomerRepositoryDb {
+	return CustomerRepositoryDb{dbClient}
 }
