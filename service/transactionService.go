@@ -23,7 +23,7 @@ func (s DefaultTransactionService) CreateNewTransaction(r dto.NewTransactionRequ
 		return nil, err
 	}
 
-	account, appError := s.accountRepo.FindBy(r.AccountId, r.CustomerId)
+	account, appError := s.accountRepo.FindBy(r.AccountId)
 	if appError != nil {
 		return nil, appError
 	}
@@ -31,23 +31,14 @@ func (s DefaultTransactionService) CreateNewTransaction(r dto.NewTransactionRequ
 	var newAmount float64
 
 	if r.TransactionType == dto.WITHDRAWAL {
-		// Check if enough money on account
 		newAmount = account.Amount - r.Amount
+		// Check if enough money on account
 		if newAmount < 0 {
 			return nil, errors2.NewValidationError("Not enough money in account")
 		}
-	}
-
-	if r.TransactionType == dto.DEPOSIT {
+	} else {
 		newAmount = account.Amount + r.Amount
 	}
-
-	err = s.accountRepo.UpdateAmount(r.AccountId, newAmount)
-	if err != nil {
-		return nil, err
-	}
-
-	account.Amount = newAmount
 
 	t := domain.Transaction{
 		TransactionId:   "",
@@ -63,6 +54,7 @@ func (s DefaultTransactionService) CreateNewTransaction(r dto.NewTransactionRequ
 		return nil, err
 	}
 
+	account.Amount = newAmount
 	result := newTransaction.TransactionToDtoResponse(account)
 
 	return &result, nil

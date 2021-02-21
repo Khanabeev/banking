@@ -31,13 +31,13 @@ func (d AccountRepositoryDb) Save(a Account) (*Account, *errors2.AppError) {
 	return &a, nil
 }
 
-func (d AccountRepositoryDb) FindBy(accountId, customerId string) (*Account, *errors2.AppError) {
+func (d AccountRepositoryDb) FindBy(accountId string) (*Account, *errors2.AppError) {
 
 	stmt := `SELECT account_id, customer_id, opening_date, account_type, status, amount
 				FROM accounts 
-				WHERE account_id = ? AND customer_id = ?`
+				WHERE account_id = ?`
 
-	row := d.client.QueryRow(stmt, accountId, customerId)
+	row := d.client.QueryRow(stmt, accountId)
 	if row.Err() != nil {
 		logger.Error("Error while getting account: " + row.Err().Error())
 		return nil, errors2.UnexpectedError("Unexpected error from database")
