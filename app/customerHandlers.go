@@ -18,11 +18,14 @@ func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Reque
 
 	customers, err := ch.service.GetAllCustomers(status)
 	if err != nil {
-		writeResponse(w, err.Code,err.AsMessage())
+		writeResponse(w, err.Code, err.AsMessage())
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(customers)
+	err2 := json.NewEncoder(w).Encode(customers)
+	if err2 != nil {
+		writeResponse(w, http.StatusUnprocessableEntity, err2.Error())
+	}
 
 }
 
@@ -37,7 +40,10 @@ func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) 
 
 	if r.Header.Get("Content-Type") == "application/xml" {
 		w.Header().Set("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customer)
+		err2 := xml.NewEncoder(w).Encode(customer)
+		if err2 != nil {
+			writeResponse(w, http.StatusUnprocessableEntity, err2.Error())
+		}
 	} else {
 		writeResponse(w, http.StatusOK, customer)
 	}

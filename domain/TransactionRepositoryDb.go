@@ -37,7 +37,8 @@ func (r TransactionRepositoryDb) Save(t Transaction) (*Transaction, *errors2.App
 	}
 	_, err = tx.Exec(stmt, t.Amount, t.AccountId)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
+
 		logger.Error("Error while UPDATING account amount: " + err.Error())
 		return nil, errors2.UnexpectedError("Unexpected error from database")
 	}

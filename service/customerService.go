@@ -5,7 +5,7 @@ import (
 	"github.com/Khanabeev/banking/dto"
 	errors2 "github.com/Khanabeev/banking/errors"
 )
-
+//go:generate mockgen -destination=../mocks/service/mockCustomerService.go -package=service github.com/Khanabeev/banking/service CustomerService
 type CustomerService interface {
 	GetAllCustomers(string) ([]dto.CustomerResponse, *errors2.AppError)
 	GetCustomer(string) (*dto.CustomerResponse, *errors2.AppError)
@@ -20,10 +20,8 @@ func (s DefaultCustomerService) GetAllCustomers(status string) ([]dto.CustomerRe
 	switch status {
 	case "active":
 		status = "1"
-		break
 	case "inactive":
 		status = "0"
-		break
 	default:
 		status = ""
 	}
